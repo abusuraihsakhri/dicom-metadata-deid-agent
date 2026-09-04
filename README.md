@@ -1,6 +1,6 @@
 # Dicom Metadata Deid Agent
 
-> **Domain:** Clinical Decision Support & Biomedical Computing  
+> **Domain:** Clinical Decision Support & Biomedical Computing
 > **Reference Guidelines & Standards:** `Standard Clinical Formulations & ISO/IEC Quality Frameworks`
 
 <div align="center">
@@ -18,7 +18,7 @@
 
 ## 📖 What It Does
 
-**Dicom Metadata Deid Agent** is an advanced analytical and computational platform implementing DICOM PS 3.15 Header De-Identification & Synthetic UID Generator.
+**Dicom Metadata Deid Agent** is an advanced analytical and computational platform implementing DICOM PS 3.15 Header De-Identification & Synthetic UID Generator. It provides multi-agent consensus evaluation, PHI outbound protection, and tamper-evident audit logging.
 
 ---
 
@@ -33,9 +33,22 @@
 - **`SyntheticUIDGeneratorAgent`**: Specialized Sub-Agent 2 for dicom-metadata-deid-agent
 - **`BurnedInPixelPHIScannerAgent`**: Specialized Sub-Agent 3 for dicom-metadata-deid-agent
 
+### 🏗️ Architecture
+
+The project contains two parallel implementations:
+
+1. **`agents/` package** — Enterprise supervisor orchestration with worker-based evaluation
+2. **`dicom_metadata_deid_agent/` package** — Clinical domain engine with DICOM PS 3.15 de-identification profile
+
 ---
 
 ## 💻 CLI Quickstart & Usage
+
+### Installation
+
+```bash
+pip install -e .
+```
 
 ### 1. Guided Interactive Mode
 ```bash
@@ -78,6 +91,16 @@ python cli.py --task-id <value> --target <value> --primary <value> --secondary <
 * **Active Learning Bayesian Calibration:** Dynamic tracker updating worker reliability weights and monitoring Brier calibration drift.
 * **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`).
 
+### Security Configuration
+
+The audit trail requires a secret key to be configured via environment variable:
+
+```bash
+export AUDIT_SECRET_KEY="your-secure-random-key-here"
+```
+
+**Never use hardcoded secrets in production.** The application will raise a `SecurityException` if the key is not set.
+
 ---
 
 ## 🧪 Testing & Verification
@@ -100,5 +123,49 @@ python simulator.py --tasks 1000 --concurrency 8
 
 ```bash
 docker build -t dicom-metadata-deid-agent .
-docker run -p 8000:8000 dicom-metadata-deid-agent
+docker run -p 8000:8000 -e AUDIT_SECRET_KEY="your-secure-key" dicom-metadata-deid-agent
+```
+
+Or using Docker Compose:
+
+```bash
+AUDIT_SECRET_KEY="your-secure-key" docker-compose up
+```
+
+---
+
+## 📁 Project Structure
+
+```
+dicom-metadata-deid-agent/
+├── agents/                          # Enterprise supervisor package
+│   ├── __init__.py
+│   ├── api.py                       # FastAPI REST endpoints
+│   ├── base.py                      # PHI guard, audit trail, security
+│   ├── learning.py                  # Bayesian calibration engine
+│   ├── llm_factory.py               # LLM provider abstraction
+│   ├── metrics.py                   # Prometheus metrics collector
+│   ├── models.py                    # Pydantic schemas
+│   ├── streamer.py                  # WebSocket telemetry
+│   ├── supervisor.py                # Master orchestrator
+│   └── workers.py                   # Specialized evaluation workers
+├── dicom_metadata_deid_agent/        # Clinical domain package
+│   ├── __init__.py
+│   ├── agents.py                    # DICOM-specific sub-agents
+│   ├── cli.py                       # Clinical CLI
+│   ├── engine.py                    # Clinical domain rules
+│   ├── models.py                    # Clinical data models
+│   └── server.py                    # Clinical FastAPI server
+├── tests/                           # Test suite
+│   ├── test_dicom_metadata_deid_agent.py
+│   ├── test_enrichment.py
+│   └── test_additional_modules.py
+├── web/                             # Operations console UI
+├── cli.py                           # Main CLI entry point
+├── dicom_deid.py                    # Standalone DICOM de-identification
+├── enrichment.py                    # Feature enrichment engines
+├── simulator.py                     # Load testing simulator
+├── pyproject.toml                   # Project configuration
+├── Dockerfile                       # Container build
+└── docker-compose.yml               # Container orchestration
 ```

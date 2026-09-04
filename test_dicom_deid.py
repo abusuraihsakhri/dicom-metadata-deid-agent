@@ -1,3 +1,11 @@
+import os
+import sys
+from pathlib import Path
+
+# Set audit key before importing agents that initialize GLOBAL_AUDIT
+os.environ.setdefault("AUDIT_SECRET_KEY", "test-audit-key-not-for-production")
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import pytest
 from dicom_deid import TagConfidentialityAuditorAgent, SyntheticUIDGeneratorAgent, BurnedInPixelPHIScannerAgent, DICOMDeIDCoordinator, main
 
