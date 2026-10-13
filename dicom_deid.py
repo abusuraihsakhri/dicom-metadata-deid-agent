@@ -165,7 +165,7 @@ class DICOMDeIDCoordinator:
         if "summary" in q or "status" in q:
             return f"DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "This demonstration does not implement validated DICOM PS3.15 de-identification rules."
+            return "These guidelines are informational only: this demonstration does not implement validated DICOM PS3.15 de-identification rules."
         else:
             return f"DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
 
