@@ -14,7 +14,7 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Dicom Metadata Deid Agent API",
-    description="Enterprise Distributed Component Platform (Clinical & Biomedical AI)",
+    description="Synthetic input rule-engine demonstration; no DICOM de-identification",
     version="3.0.0-ENTERPRISE",
 )
 
@@ -41,7 +41,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "dicom-metadata-deid-agent", "domain": "Clinical & Biomedical AI", "standard": "CAP / CLSI / ISO Standards", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "dicom-metadata-deid-agent", "domain": "Clinical & Biomedical AI", "standard": "NOT_A_DICOM_COMPLIANCE_ASSESSMENT", "version": "3.0.0-ENTERPRISE"}
 
 
 @app.get("/metrics")
