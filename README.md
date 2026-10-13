@@ -1,171 +1,88 @@
-# Dicom Metadata Deid Agent
+# DICOM Metadata De-ID Agent
 
-> **Domain:** Clinical Decision Support & Biomedical Computing
-> **Reference Guidelines & Standards:** `Standard Clinical Formulations & ISO/IEC Quality Frameworks`
+A Python research utility containing **two distinct functions**: conservative local DICOM technical-metadata inspection, and an existing synthetic-input rule-engine demonstration. The project is **not** a validated DICOM anonymizer or a clinical decision-support system.
 
-<div align="center">
+## Capabilities and limitations
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+- **DICOM technical-metadata inspection:** reads a DICOM Part 10 file locally with pydicom, stopping before Pixel Data. Exports only a small allowlist of image-encoding fields (such as Modality, Rows, and Columns) in JSON. Identifiers, UIDs, dates, free text, private elements, and images are **not included** in the report.
+- **Metadata risk indicators:** reports counts of excluded/private elements and the source `BurnedInAnnotation` flag where present. These indicators are not an assessment of the image itself.
+- **Synthetic rule-engine demo:** preserves the original CLI, REST API, and numeric threshold-alert workflows. Their generic clinical-sounding thresholds have **no established DICOM PS3.15 interpretation**.
+- **Audit trail:** HMAC-SHA256 authenticates stored entry metadata and chain links. Original payload details are not retained, so their contents cannot be reconstructed or independently revalidated from the digest alone.
 
-</div>
+**Safety boundary:** Neither the inspector nor the rule engine performs complete DICOM PS3.15 de-identification. The inspector does not inspect pixel content, burned-in annotations, overlays, structured reports, encapsulated data, or other possible identifiers. A metadata-only JSON extract must be reviewed before disclosure. Never release the original DICOM file on the assumption that this tool anonymized it.
 
----
+## Install
 
-## 📖 What It Does
-
-**Dicom Metadata Deid Agent** is an advanced analytical and computational platform implementing DICOM PS 3.15 Header De-Identification & Synthetic UID Generator. It provides multi-agent consensus evaluation, PHI outbound protection, and tamper-evident audit logging.
-
----
-
-## ⚙️ Key Capabilities & Algorithmic Modules
-
-### 🔬 Core Algorithmic & Evaluation Engines
-
-- **`Severity`** — dedicated module for severity evaluation and state verification.
-- **`DomainKnowledgeRegistry`**: Enterprise domain rules, guideline matrices, and evidence benchmarks.
-- **`AgentAlert`** — dedicated module for agent alert evaluation and state verification.
-- **`TagConfidentialityAuditorAgent`**: Specialized Sub-Agent 1 for dicom-metadata-deid-agent
-- **`SyntheticUIDGeneratorAgent`**: Specialized Sub-Agent 2 for dicom-metadata-deid-agent
-- **`BurnedInPixelPHIScannerAgent`**: Specialized Sub-Agent 3 for dicom-metadata-deid-agent
-
-### 🏗️ Architecture
-
-The project contains two parallel implementations:
-
-1. **`agents/` package** — Enterprise supervisor orchestration with worker-based evaluation
-2. **`dicom_metadata_deid_agent/` package** — Clinical domain engine with DICOM PS 3.15 de-identification profile
-
----
-
-## 💻 CLI Quickstart & Usage
-
-### Installation
+Python 3.10–3.13:
 
 ```bash
-pip install -e .
+git clone https://github.com/abusuraihsakhri/dicom-metadata-deid-agent.git
+cd dicom-metadata-deid-agent
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[api]"
 ```
 
-### 1. Guided Interactive Mode
-```bash
-python cli.py
-```
+For test and lint tools, use `python -m pip install -e ".[api,dev]"`.
 
-### 2. Direct Parameterized Evaluation
-```bash
-python cli.py --task-id <value> --target <value> --primary <value> --secondary <value>
-```
-
-### Parameter Reference
-- `--task-id`: Specifies input measurement or parameter value.
-- `--target`: Specifies input measurement or parameter value.
-- `--primary`: Specifies input measurement or parameter value.
-- `--secondary`: Specifies input measurement or parameter value.
-- `--critical`: Specifies input measurement or parameter value.
-- `--status`: Specifies input measurement or parameter value.
-- `--input`: Specifies input measurement or parameter value.
-- `--output`: Specifies input measurement or parameter value.
-
-### Input Data Schema
-
-| Field | Description | Requirement |
-|:------|:------------|:------------|
-| `case_id` | Parameter / observation metric | Required |
-| `patient_synthetic_id` | Parameter / observation metric | Required |
-| `metric_primary` | Parameter / observation metric | Required |
-| `metric_secondary` | Parameter / observation metric | Required |
-| `is_stat` | Parameter / observation metric | Required |
-| `status_flag` | Parameter / observation metric | Required |
-
----
-
-## 🛡️ Security & Enterprise Architecture
-
-* **Zero-PHI Outbound Interceptor:** Active AST and regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition.
-* **Air-Gapped LLM Reasoning Adapter:** Agnostic integration for local Ollama instances (`llama3`, `mistral`), Claude 3.5 Sonnet, GPT-4o, and deterministic test mocks.
-* **Active Learning Bayesian Calibration:** Dynamic tracker updating worker reliability weights and monitoring Brier calibration drift.
-* **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`).
-
-### Security Configuration
-
-The audit trail requires a secret key to be configured via environment variable:
+## Inspect a local DICOM file
 
 ```bash
-export AUDIT_SECRET_KEY="your-secure-random-key-here"
+# Prints an allowlisted technical-metadata JSON report (does not modify input)
+dicom-metadata-inspect scan example.dcm
+
+# Writes a new JSON file; refuses to overwrite any existing output
+dicom-metadata-inspect export example.dcm technical-metadata.json
 ```
 
-**Never use hardcoded secrets in production.** The application will raise a `SecurityException` if the key is not set.
+This command operates locally and does **not** upload the file, export pixel data, preserve identifying metadata or create a de-identified DICOM file. Only DICOM Part 10 inputs are accepted; nonstandard/raw datasets are not coerced into acceptance.
 
----
+## Use the legacy synthetic rule engine
 
-## 🧪 Testing & Verification
-
-Run the automated test suite:
+The rule engine requires an audit key even in local mode:
 
 ```bash
-pytest -v
+export AUDIT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+
+# CLI demonstration (not a DICOM scan)
+python cli.py audit --task-id TASK-001 --target SYNTH-001 --primary 12 --secondary 4
+
+# Existing CSV batch mode, using synthetic identifiers only
+python cli.py batch -i sample.csv -o results.csv
+
+# Start the optional local REST API and web console
+python cli.py serve --host 127.0.0.1 --port 8000
 ```
 
-Execute high-throughput batch simulation benchmarks:
+Open **http://127.0.0.1:8000/** for the local rule-engine console, **/docs** for API schema and **/health** for a health check. The browser form sends synthetic rule metrics to the same-origin API. It does not upload or de-identify DICOM files, and it does not fabricate offline audit results.
+
+`dicom-metadata-deid-engine` remains an alternative console entry point for the separately maintained `dicom_metadata_deid_agent` clinical-metric demonstration. `dicom_deid.py`, `enrichment.py`, and `agents/` retain their existing demonstration and utility interfaces.
+
+## Privacy and security
+
+- Run the inspector locally, avoid real patient data in the demo API, and review any output before sharing. Regex-based PHI blocking is heuristic and cannot guarantee HIPAA compliance or absence of PHI.
+- The HMAC audit key must be provided through `AUDIT_SECRET_KEY`; there is no production fallback. Do not commit the key to the repository. Logs are held **in memory** and are not durable evidence after process termination.
+- Docker Compose requires an explicit key and publishes the REST service on **127.0.0.1:8000** by default. The REST endpoints do not implement user authentication, so do not expose them on a public interface without suitable access control and a security review.
+- The local web interface is served by FastAPI, not GitHub Pages. GitHub Pages cannot run the project's Python API, and no verified live GitHub Pages application is provided.
+
+## Development and verification
 
 ```bash
-python simulator.py --tasks 1000 --concurrency 8
+python -m pip install -e ".[api,dev]"
+python -m compileall -q agents dicom_metadata_deid_agent cli.py dicom_deid.py enrichment.py
+ruff check --select E9,F63,F7,F82 .
+python -m pytest -q
 ```
 
----
+GitHub Actions runs the Python test suite on Python 3.10, 3.11, 3.12 and 3.13. Tests include synthetic DICOM metadata, audit-tampering regression cases, CSV parsing, API smoke tests and browser JavaScript syntax. Full automated cross-browser testing and a formal DICOM conformance assessment are not included.
 
-## 🐳 Container Deployment
+For container use:
 
 ```bash
-docker build -t dicom-metadata-deid-agent .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY="your-secure-key" dicom-metadata-deid-agent
+export AUDIT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+docker compose up --build
 ```
 
-Or using Docker Compose:
+## Technology and license
 
-```bash
-AUDIT_SECRET_KEY="your-secure-key" docker-compose up
-```
-
----
-
-## 📁 Project Structure
-
-```
-dicom-metadata-deid-agent/
-├── agents/                          # Enterprise supervisor package
-│   ├── __init__.py
-│   ├── api.py                       # FastAPI REST endpoints
-│   ├── base.py                      # PHI guard, audit trail, security
-│   ├── learning.py                  # Bayesian calibration engine
-│   ├── llm_factory.py               # LLM provider abstraction
-│   ├── metrics.py                   # Prometheus metrics collector
-│   ├── models.py                    # Pydantic schemas
-│   ├── streamer.py                  # WebSocket telemetry
-│   ├── supervisor.py                # Master orchestrator
-│   └── workers.py                   # Specialized evaluation workers
-├── dicom_metadata_deid_agent/        # Clinical domain package
-│   ├── __init__.py
-│   ├── agents.py                    # DICOM-specific sub-agents
-│   ├── cli.py                       # Clinical CLI
-│   ├── engine.py                    # Clinical domain rules
-│   ├── models.py                    # Clinical data models
-│   └── server.py                    # Clinical FastAPI server
-├── tests/                           # Test suite
-│   ├── test_dicom_metadata_deid_agent.py
-│   ├── test_enrichment.py
-│   └── test_additional_modules.py
-├── web/                             # Operations console UI
-├── cli.py                           # Main CLI entry point
-├── dicom_deid.py                    # Standalone DICOM de-identification
-├── enrichment.py                    # Feature enrichment engines
-├── simulator.py                     # Load testing simulator
-├── pyproject.toml                   # Project configuration
-├── Dockerfile                       # Container build
-└── docker-compose.yml               # Container orchestration
-```
+Python, pydicom, Pydantic, optional FastAPI/Uvicorn and a dependency-light HTML/JavaScript UI. The repository is licensed under the [MIT License](LICENSE).
