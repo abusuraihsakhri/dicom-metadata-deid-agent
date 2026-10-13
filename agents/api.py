@@ -2,9 +2,9 @@
 FastAPI REST API Server for Dicom Metadata Deid Agent.
 """
 from typing import Dict, Any, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
-from .base import AuditLogger, PHIGuard
+from .base import AuditLogger, PHIGuard, SecurityException
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
 
@@ -15,6 +15,13 @@ app = FastAPI(
     description="Enterprise Distributed Component Platform (Clinical & Biomedical AI)",
     version="3.0.0-ENTERPRISE",
 )
+
+
+@app.exception_handler(SecurityException)
+async def on_rejected_identifier(request: Request, exc: SecurityException):
+    # Never echo potentially identifying input in an HTTP response.
+    from fastapi.responses import JSONResponse
+    return JSONResponse(status_code=422, content={"detail": "Possible identifier detected; request rejected."})
 
 
 class ChatRequest(BaseModel):
