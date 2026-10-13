@@ -33,3 +33,10 @@ dicom-metadata-inspect = "dicom_metadata_deid_agent.deidentify:main"
 [project.urls]
 Homepage = "https://github.com/abusuraihsakhri/dicom-metadata-deid-agent"
 Repository = "https://github.com/abusuraihsakhri/dicom-metadata-deid-engine.git"
+
+[tool.setuptools]
+packages = ["agents", "dicom_metadata_deid_agent"]
+py-modules = [
+    "cli", "dicom_deid", "enrichment", "simulator",
+    "dicom_deid_app", "dicom_metadata_deid_agent_app",
+]
