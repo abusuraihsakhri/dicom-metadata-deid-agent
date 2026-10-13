@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent
-Scans and de-identifies DICOM header tags (Patient Name, MRN, Institution, Physician, UID replacement) per DICOM Standard PS 3.15 Profile.
+Synthetic threshold-alert demonstration; does not read, modify, or anonymize DICOM files.
 
 Domain: Medical Imaging Informatics
 Author: Dr. Abu Suraih Sakhri
