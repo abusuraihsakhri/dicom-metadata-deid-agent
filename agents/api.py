@@ -2,7 +2,9 @@
 FastAPI REST API Server for Dicom Metadata Deid Agent.
 """
 from typing import Dict, Any, List
+from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from .base import AuditLogger, PHIGuard, SecurityException
 from .models import SystemTaskPayload, ConsensusDossier
@@ -22,6 +24,15 @@ async def on_rejected_identifier(request: Request, exc: SecurityException):
     # Never echo potentially identifying input in an HTTP response.
     from fastapi.responses import JSONResponse
     return JSONResponse(status_code=422, content={"detail": "Possible identifier detected; request rejected."})
+
+
+@app.get("/", include_in_schema=False)
+def index():
+    """Serve the local console from a source checkout or Docker image."""
+    path = Path(__file__).resolve().parent.parent / "web" / "index.html"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Web console not installed.")
+    return FileResponse(path)
 
 
 class ChatRequest(BaseModel):
