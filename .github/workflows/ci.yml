@@ -19,8 +19,10 @@ jobs:
       # A disposable value for CI only; production must provide its own key.
       AUDIT_SECRET_KEY: ci-only-test-key-not-for-production
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
