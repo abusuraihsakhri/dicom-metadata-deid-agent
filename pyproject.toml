@@ -24,7 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 api = ["fastapi>=0.110,<1", "uvicorn>=0.30,<1"]
-dev = ["pytest>=8,<10", "ruff>=0.6,<1"]
+dev = ["pytest>=8,<10", "ruff>=0.6,<1", "httpx>=0.27,<1"]
 
 [project.scripts]
 dicom-metadata-deid-engine = "dicom_metadata_deid_agent.cli:main"
