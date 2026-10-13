@@ -1,40 +1,34 @@
-name: Dicom Metadata Deid Engine CI/CD & Security Verification
+name: Python CI and security regression tests
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
+
+permissions:
+  contents: read
 
 jobs:
-  test-and-audit:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
-
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    env:
+      # A disposable value for CI only; production must provide its own key.
+      AUDIT_SECRET_KEY: ci-only-test-key-not-for-production
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install fastapi uvicorn pydantic pytest
-
-    - name: Run Pytest Suite
-      run: |
-        pytest -v
-
-    - name: Security SAST & Zero-PHI Audit
-      run: |
-        python -c "
-        from agents.base import PHIGuard, AuditLogger
-        import pytest
-        assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
-        "
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package and development dependencies
+        run: python -m pip install -e ".[api,dev]"
+      - name: Compile Python modules
+        run: python -m compileall -q agents dicom_metadata_deid_agent cli.py dicom_deid.py enrichment.py
+      - name: Check Python syntax and undefined names
+        run: ruff check --select E9,F63,F7,F82 .
+      - name: Execute regression tests
+        run: python -m pytest -q
