@@ -17,11 +17,19 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [
+    "pydantic>=2.0,<3",
+    "pydicom>=3.0,<4",
+]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110,<1", "uvicorn>=0.30,<1"]
+dev = ["pytest>=8,<10", "ruff>=0.6,<1"]
 
 [project.scripts]
 dicom-metadata-deid-engine = "dicom_metadata_deid_agent.cli:main"
+dicom-metadata-inspect = "dicom_metadata_deid_agent.deidentify:main"
 
 [project.urls]
-Homepage = "https://github.com/abusuraihsakhri/dicom-metadata-deid-engine"
+Homepage = "https://github.com/abusuraihsakhri/dicom-metadata-deid-agent"
 Repository = "https://github.com/abusuraihsakhri/dicom-metadata-deid-engine.git"
