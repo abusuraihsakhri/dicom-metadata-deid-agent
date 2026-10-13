@@ -14,7 +14,7 @@ def create_app():
 
         app = FastAPI(
             title="DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent",
-            description="Scans and de-identifies DICOM header tags (Patient Name, MRN, Institution, Physician, UID replacement) per DICOM Standard PS 3.15 Profile.",
+            description="Synthetic metric demonstration. No DICOM metadata or pixel de-identification is performed.",
             version="2.0.0-PRO",
         )
 

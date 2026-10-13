@@ -11,6 +11,18 @@ from .agents import DICOMDeIDCoordinator
 coordinator = DICOMDeIDCoordinator()
 
 
+def parse_csv_bool(value) -> bool:
+    """Parse CSV booleans without treating nonempty 'False' as true."""
+    if isinstance(value, bool):
+        return value
+    normalized = str(value if value is not None else "").strip().lower()
+    if normalized in ("true", "1", "yes", "y", "on"):
+        return True
+    if normalized in ("false", "0", "no", "n", "off", ""):
+        return False
+    raise ValueError("Invalid boolean in CSV; expected true/false or 1/0.")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="dicom-metadata-deid-agent", description="DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -73,7 +85,7 @@ def main(argv=None):
             fieldnames = list(reader.fieldnames or [])
             rows = list(reader)
 
-        out_fields = fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]))
         out_rows = []
         for r in rows:
             case = ClinicalCasePayload(
@@ -82,7 +94,7 @@ def main(argv=None):
                 primary_metric=float(r.get("metric_primary", r.get("primary_metric", 15.0))),
                 secondary_metric=float(r.get("metric_secondary", r.get("secondary_metric", 5.0))),
                 status_flag=r.get("status_flag", r.get("status_text", "NORMAL")),
-                is_stat=bool(r.get("is_stat", r.get("critical_flag", False))),
+                is_stat=parse_csv_bool(r.get("is_stat", r.get("critical_flag", False))),
             )
             dossier = coordinator.process_case(case)
             row_dict = dict(r)

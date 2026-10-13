@@ -3,11 +3,34 @@ Supervisor Orchestrator & Operations Intelligence for Dicom Metadata Deid Agent.
 Domain: Clinical & Biomedical AI
 """
 import uuid
+import json
+import re
 from typing import Dict, Any, List, Optional
 from .base import AuditLogger, ActionExecutor, PHIGuard
 from .models import SystemTaskPayload, AgentAlert, ConsensusDossier, UrgencyLevel, SystemIntegrityStatus
 from .workers import InvariantQCWorker, SafetyEscalationWorker, ProtocolConformanceWorker
 from .llm_factory import LLMFactory
+
+
+_IDENTIFYING_KEYS = {
+    "patientname", "patientid", "patientbirthdate", "patientaddress",
+    "patienttelephone", "accessionnumber", "medicalrecordnumber",
+    "socialsecuritynumber", "referringphysicianname",
+}
+
+
+def _assert_no_identifying_keys(value):
+    """Reject known identifying metadata keys, including in nested attributes."""
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            normalized = re.sub(r"[^a-z0-9]", "", str(key).lower())
+            if normalized in _IDENTIFYING_KEYS:
+                from .base import SecurityException
+                raise SecurityException("Potential identifying field detected.")
+            _assert_no_identifying_keys(nested)
+    elif isinstance(value, (list, tuple)):
+        for nested in value:
+            _assert_no_identifying_keys(nested)
 
 
 class SystemSupervisor:
@@ -25,6 +48,8 @@ class SystemSupervisor:
         PHIGuard.assert_no_phi(payload.task_id)
         PHIGuard.assert_no_phi(payload.target_identifier)
         PHIGuard.assert_no_phi(payload.status_descriptor)
+        _assert_no_identifying_keys(payload.attributes)
+        PHIGuard.assert_no_phi(json.dumps(payload.attributes, ensure_ascii=False))
 
         # Multi-worker evaluations
         all_alerts: List[AgentAlert] = []

@@ -103,7 +103,7 @@ class TestLLMFactory:
         llm = LLMFactory.create("mock")
         response = llm.invoke("Test query about specimen parameters")
         assert "Deterministic Verification Engine" in response
-        assert "CAP / CLSI / ISO Standards" in response
+        assert "No clinical or DICOM conformance verification" in response
 
     def test_mock_llm_phi_blocking(self):
         llm = LLMFactory.create("mock")

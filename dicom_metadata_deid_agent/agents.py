@@ -93,7 +93,7 @@ class DICOMDeIDCoordinator:
             "stat_critical_alerts": stat_count,
             "warning_alerts": warn_count,
             "alerts": [a.to_dict() for a in all_alerts],
-            "guideline_standard": "DICOM PS 3.15 De-Identification Profile",
+            "guideline_standard": "NOT_APPLICABLE_TO_SYNTHETIC_RULE_DEMO",
             "consensus_summary": f"Multi-agent supervision completed across 3 sub-agents with status [{status.value}].",
         }
 
@@ -105,6 +105,6 @@ class DICOMDeIDCoordinator:
         if "status" in q or "summary" in q:
             return f"DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent currently tracking {len(self.case_registry)} cases in on-premises memory."
         elif "guideline" in q or "standard" in q:
-            return "Active clinical surveillance operates under DICOM PS 3.15 De-Identification Profile validated protocols."
+            return "This synthetic rule engine does not validate compliance with DICOM PS3.15."
         else:
-            return f"DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent executive agent online. Zero-PHI air-gapped monitoring active."
+            return f"DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent synthetic metric demonstration active; do not submit patient data."

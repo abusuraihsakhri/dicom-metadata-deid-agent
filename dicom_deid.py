@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent
-Scans and de-identifies DICOM header tags (Patient Name, MRN, Institution, Physician, UID replacement) per DICOM Standard PS 3.15 Profile.
+Synthetic threshold-alert demonstration; does not read, modify, or anonymize DICOM files.
 
 Domain: Medical Imaging Informatics
 Author: Dr. Abu Suraih Sakhri
@@ -32,8 +32,8 @@ class Severity(str):
 class DomainKnowledgeRegistry:
     """Enterprise domain rules, guideline matrices, and evidence benchmarks."""
     SYSTEM_VERSION = "2.0.0-PRO-CLINICAL"
-    ZERO_PHI_COMPLIANCE = True
-    HIPAA_SAFE_HARBOR = "ACTIVE_ON_PREMISES"
+    ZERO_PHI_COMPLIANCE = False
+    HIPAA_SAFE_HARBOR = "NOT_ASSESSED"
 
     @staticmethod
     def audit_security_and_integrity(payload: Dict[str, Any]) -> List[str]:
@@ -165,7 +165,7 @@ class DICOMDeIDCoordinator:
         if "summary" in q or "status" in q:
             return f"DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "All sub-agents operate under validated consensus clinical algorithms and CAP/CLSI/NCCN/WHO standards."
+            return "These guidelines are informational only: this demonstration does not implement validated DICOM PS3.15 de-identification rules."
         else:
             return f"DICOM-DeID Sentinel: PS 3.15 Attribute Confidentiality & Metadata Scrubbing Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
 
