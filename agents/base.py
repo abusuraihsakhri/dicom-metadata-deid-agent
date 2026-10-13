@@ -89,9 +89,28 @@ class AuditTrail:
         return entry
 
     def verify_integrity(self) -> bool:
-        for i, entry in enumerate(self.logs):
-            prev = self.logs[i-1]["current_hash"] if i > 0 else "GENESIS_BLOCK_0000000000000000"
-            if entry["prev_hash"] != prev:
+        """Authenticate every entry and its link to the preceding entry.
+
+        Only the payload digest is retained; original details are not recoverable
+        or independently verifiable once discarded.
+        """
+        previous = "GENESIS_BLOCK_0000000000000000"
+        for entry in self.logs:
+            try:
+                if entry["prev_hash"] != previous:
+                    return False
+                message = "|".join((
+                    entry["audit_id"], entry["timestamp"], entry["actor"],
+                    entry["actor_tier"], entry["event_type"],
+                    entry["payload_hash"], entry["prev_hash"],
+                ))
+                expected = hmac.new(
+                    self.secret_key, message.encode("utf-8"), hashlib.sha256
+                ).hexdigest()
+                if not hmac.compare_digest(expected, entry["current_hash"]):
+                    return False
+                previous = entry["current_hash"]
+            except (KeyError, TypeError, AttributeError):
                 return False
         return True
 
