@@ -101,3 +101,21 @@ def test_audit_detects_mutated_digest():
     audit.log("worker", "supervisor", "EVENT", {"status": "OK"})
     audit.logs[0]["payload_hash"] = "a" * 64
     assert not audit.verify_integrity()
+
+
+def test_known_identifying_dicom_keys_blocked_recursively():
+    from agents.base import SecurityException
+    from agents.models import SystemTaskPayload
+    from agents.supervisor import SystemSupervisor
+    payload = SystemTaskPayload(
+        task_id="SYNTH-001", target_identifier="SYNTH-002",
+        primary_metric=1, attributes={"nested": [{"PatientName": "A Person"}]},
+    )
+    with pytest.raises(SecurityException):
+        SystemSupervisor().process_task(payload)
+
+
+def test_dicom_person_name_heuristic():
+    from agents.base import PHIGuard, SecurityException
+    with pytest.raises(SecurityException):
+        PHIGuard.assert_no_phi("Private^Jane")
